@@ -107,6 +107,7 @@ void loop() {
     //if you get here you have connected to the WiFi
     Serial.println("connected...yeey :)");
 
+    if(io) delete io;
     io = new AdafruitIO_WiFi(IO_USERNAME, IO_KEY, WiFi.SSID().c_str(), WiFi.psk().c_str());
     AdafruitIO_Feed* feed = io->feed(ADAFRUIT_IO_FEED);
     feed->onMessage(handleMessage);
