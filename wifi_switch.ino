@@ -98,19 +98,14 @@ void loop() {
     
     if (!wifiManager.startConfigPortal("wifi_switch")) {
       Serial.println("failed to connect and hit timeout");
-      delay(3000);
-      //reset and try again, or maybe put it to deep sleep
-      ESP.reset();
-      delay(5000);
     }
 
-    //if you get here you have connected to the WiFi
-    Serial.println("connected...yeey :)");
-
-    if(io) delete io;
-    io = new AdafruitIO_WiFi(IO_USERNAME, IO_KEY, WiFi.SSID().c_str(), WiFi.psk().c_str());
-    AdafruitIO_Feed* feed = io->feed(ADAFRUIT_IO_FEED);
-    feed->onMessage(handleMessage);
+    if (WiFi.status() == WL_CONNECTED){
+      if(io) delete io;
+      io = new AdafruitIO_WiFi(IO_USERNAME, IO_KEY, WiFi.SSID().c_str(), WiFi.psk().c_str());
+      AdafruitIO_Feed* feed = io->feed(ADAFRUIT_IO_FEED);
+      feed->onMessage(handleMessage);
+    }
     
     configure_wifi = false;
   }
