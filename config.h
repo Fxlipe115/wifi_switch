@@ -4,3 +4,4 @@
 // or if you need your Adafruit IO key.
 #define IO_USERNAME    "user_name"
 #define IO_KEY         "key"
+#define ADAFRUIT_IO_FEED "feed"

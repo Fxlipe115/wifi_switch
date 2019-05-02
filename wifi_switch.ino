@@ -16,8 +16,6 @@
 #define BUTTON_PIN 1
 #define RELAY_PIN 2
 
-#define ADAFRUIT_IO_FEED "switch"
-
 int push_count = 0;
 int light_state = LOW;
 bool toggle = false;
