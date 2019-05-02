@@ -16,6 +16,8 @@
 #define BUTTON_PIN 1
 #define RELAY_PIN 2
 
+#define ADAFRUIT_IO_FEED "switch"
+
 int push_count = 0;
 int light_state = LOW;
 bool toggle = false;
@@ -31,6 +33,13 @@ void setup() {
   pinMode(RELAY_PIN, OUTPUT);
 }
 
+void submit_to_feed(const char* feed, int value) {
+  if(WiFi.status() == WL_CONNECTED) {
+    AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WiFi.SSID().c_str(), WiFi.psk().c_str());
+    AdafruitIO_Feed* feed = io.feed(feed);
+    feed->save(value);
+  }
+}
 
 void loop() {
   // control press time
@@ -79,18 +88,14 @@ void loop() {
     }
 
     //if you get here you have connected to the WiFi
-    Serial.println("connected...yeey :)");
-    
-    AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WiFi.SSID().c_str(), WiFi.psk().c_str());
-    AdafruitIO_Feed* digital = io.feed("switch");
-
-    
+    Serial.println("connected...yeey :)");    
   }
 
 
   if (toggle) {
     light_state = !light_state;
     digitalWrite(RELAY_PIN, light_state);
+    submit_to_feed(ADAFRUIT_IO_FEED, light_state);
     toggle = false;
   }
   if (configure_wifi) {
