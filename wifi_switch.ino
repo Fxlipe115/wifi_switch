@@ -23,6 +23,8 @@ int light_state = LOW;
 bool toggle = false;
 bool configure_wifi = false;
 
+AdafruitIO_WiFi* io = NULL;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -33,11 +35,16 @@ void setup() {
 }
 
 void submit_to_feed(const char* feed_name, int value) {
-  if(WiFi.status() == WL_CONNECTED) {
-    AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WiFi.SSID().c_str(), WiFi.psk().c_str());
-    AdafruitIO_Feed* feed = io.feed(feed_name);
-    feed->save(value);
-  }
+  AdafruitIO_Feed* feed = io->feed(feed_name);
+  feed->save(value);
+}
+
+// this function is called whenever a feed message
+// is received from Adafruit IO. it was attached to
+// the feed in the loop() function below.
+void handleMessage(AdafruitIO_Data *data) {
+  light_state = data->toPinLevel();
+  digitalWrite(RELAY_PIN, light_state); 
 }
 
 void loop() {
@@ -57,8 +64,21 @@ void loop() {
     push_count = 0;
   }
   
-  // is configuration portal requested?
+
+  if (io) {
+    io->run();
+  }
+  
+  if (toggle) {
+    light_state = !light_state;
+    digitalWrite(RELAY_PIN, light_state);
+    submit_to_feed(ADAFRUIT_IO_FEED, light_state);
+    toggle = false;
+  }
+  
   if (configure_wifi) {
+    Serial.println("resetting");
+    
     //WiFiManager
     //Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wifiManager;
@@ -87,19 +107,12 @@ void loop() {
     }
 
     //if you get here you have connected to the WiFi
-    Serial.println("connected...yeey :)");    
-  }
+    Serial.println("connected...yeey :)");
 
-
-  if (toggle) {
-    light_state = !light_state;
-    digitalWrite(RELAY_PIN, light_state);
-    submit_to_feed(ADAFRUIT_IO_FEED, light_state);
-    toggle = false;
-  }
-  if (configure_wifi) {
-    Serial.println("resetting");
+    io = new AdafruitIO_WiFi(IO_USERNAME, IO_KEY, WiFi.SSID().c_str(), WiFi.psk().c_str());
+    AdafruitIO_Feed* feed = io->feed(ADAFRUIT_IO_FEED);
+    feed->onMessage(handleMessage);
+    
     configure_wifi = false;
   }
-
 }
