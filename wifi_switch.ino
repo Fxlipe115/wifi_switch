@@ -23,7 +23,6 @@ int light_state = LOW;
 bool toggle = false;
 bool configure_wifi = false;
 
-
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -33,10 +32,10 @@ void setup() {
   pinMode(RELAY_PIN, OUTPUT);
 }
 
-void submit_to_feed(const char* feed, int value) {
+void submit_to_feed(const char* feed_name, int value) {
   if(WiFi.status() == WL_CONNECTED) {
     AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WiFi.SSID().c_str(), WiFi.psk().c_str());
-    AdafruitIO_Feed* feed = io.feed(feed);
+    AdafruitIO_Feed* feed = io.feed(feed_name);
     feed->save(value);
   }
 }
