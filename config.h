@@ -6,3 +6,4 @@
 #define IO_KEY         "key"
 #define ADAFRUIT_IO_DIMMER_FEED "feed"
 #define ADAFRUIT_IO_LDR_FEED "feed"
+#define ADAFRUIT_IO_SWITCH_FEED "feed"
