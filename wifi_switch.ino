@@ -1,4 +1,4 @@
-#if defined(ESP8266)
+ #if defined(ESP8266)
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #else
 #include <WiFi.h>          
@@ -18,7 +18,7 @@
 
 #include <RBDdimmer.h> // https://github.com/RobotDynOfficial/RBDDimmer
 
-#define SWITCH_PIN 5
+#define SWITCH_PIN 34
 #define WIFI_PIN 4
 #define ZC_PIN 18
 #define LDR_PIN 35 //ADC1_CH7
@@ -51,7 +51,7 @@ void setup() {
   pinMode(DIMMER_PIN, OUTPUT);
 
   dimmer.begin(NORMAL_MODE, OFF); //dimmer initialisation: name.begin(MODE, STATE)
-  dimmer.setPower(60);
+  dimmer.setPower(90);
   if (WiFi.status() != WL_CONNECTED) {
     configureWifi();
   } else {
@@ -62,21 +62,12 @@ void setup() {
 void loop() {
   if (io) io->run();
 
-  // control press time
   if (digitalRead(SWITCH_PIN) == HIGH) {
-    push_count += 1;
-    //Serial.println(push_count);
-    configure_wifi = false;
-    toggle = false;
-  } else {
-    if (push_count > 0) {
-      if (push_count > 3000) {
-        configure_wifi = true;
-      } else {
-        toggle = true;
-      }
+    dimmer.changeState();
+    Serial.println("Switch button pressed.");
+    if (io->status() < AIO_CONNECTED) {
+      switch_feed->save(dimmer.getState());
     }
-    push_count = 0;
   }
   
   if (digitalRead(WIFI_PIN) == HIGH) {
@@ -101,7 +92,8 @@ void handleDimmerMessage(AdafruitIO_Data *data) {
   Serial.print("handleDimmerMessage: ");
   Serial.println(data->value());
   Serial.println(data->toInt());
-  dimmer.setPower(data->toInt());
+  int power = map(data->toInt(), 0, 100, 15, 90);
+  dimmer.setPower(power);
 }
 
 void handleSwitchMessage(AdafruitIO_Data *data) {
